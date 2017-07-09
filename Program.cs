@@ -15,26 +15,43 @@ namespace dotproj
         {
             return Directory.EnumerateFiles(path, "*.*proj", SearchOption.AllDirectories).
                 ToDictionary(
-                    project => project.GetProjectName(),
+                    project => project,
                     project => new HashSet<string>(ParseProjectReferences(project)));
         }
 
         static IEnumerable<string> ParseProjectReferences(string path)
         {
-            return XDocument.Load(path).
-                    Elements("ProjectReference").
-                    Select(r => r.Attribute("Include").Value.GetProjectName());
+            return XDocument.Load(path).Root.
+                    Descendants("ProjectReference").
+                    Select(r => r.
+                        Attribute("Include").Value);
         }
 
         static void CreateDotFile(Dictionary<string, HashSet<string>> entries, string path)
         {
-            File.WriteAllLines(path, entries.Keys);
+            File.WriteAllText(path, "digraph g {\n");
+            File.AppendAllLines(path, entries.Select(e => CreateDot(e.Key, e.Value)));
+            File.AppendAllText(path, "}");
+        }
+
+        static string CreateDot(string key, IEnumerable<string> values)
+        {
+            return $"{key.GetProjectName().Quote()} -> {{ {values.Select(v => v.GetProjectName().Quote()).Join(", ")} }}";
         }
     }
 
     internal static class StringExtensions
     {
         public static string GetProjectName(this string Value)
-            => Path.GetFileNameWithoutExtension(Value);
+            => Value.Split('\\', '/').Last();
+
+        public static string Join(this IEnumerable<string> values, string separator)
+            => string.Join(separator, values);
+
+        public static string Quote(this string value)
+            => $"\"{value}\"";
     }
+
+
+
 }
