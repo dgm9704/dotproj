@@ -18,7 +18,7 @@
 
             var containerName = isSolution
                 ? Path.GetFileNameWithoutExtension(args[0])
-                : Path.GetDirectoryName(args[0]);
+                : Path.GetDirectoryName(args[0]).Split('/', '\\').Last();
 
             CreateDotFile(args[1], projects, containerName);
         }
