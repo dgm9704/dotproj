@@ -1,0 +1,14 @@
+digraph {
+subgraph cluster_0 { label="nuget"
+ "log4net" [shape="box"];
+"Newtonsoft.Json" [shape="box"];
+"FSharp.Core" [shape="box"];
+}
+subgraph cluster_1 {
+label="Solution1""WindowsApp1" [shape="box",color="#00539C", style="filled", fillcolor="#00539C", fontcolor="white"];
+"WindowsApp1" -> { "Library1", "Library2", "log4net", "Newtonsoft.Json" }
+"Library1" [shape="box",color="#388A34", style="filled", fillcolor="#388A34", fontcolor="white"];
+"Library1" -> { "Newtonsoft.Json" }
+"Library2" [shape="box",color="#672878", style="filled", fillcolor="#672878", fontcolor="white"];
+"Library2" -> { "FSharp.Core", "Newtonsoft.Json" }
+}}

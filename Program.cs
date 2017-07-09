@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-
-namespace dotproj
+﻿namespace dotproj
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Xml.Linq;
+
     class Program
     {
         static void Main(string[] args)
@@ -23,50 +23,59 @@ namespace dotproj
         }
 
         static Dictionary<string, HashSet<string>> ParseFolder(string path)
-        {
-            return Directory.EnumerateFiles(path, "*.*proj", SearchOption.AllDirectories).
-                ToDictionary(
-                    project => project,
-                    project => new HashSet<string>(ParseProjectReferences(project)));
-        }
+            => GetReferences(Directory.EnumerateFiles(path, "*.*proj", SearchOption.AllDirectories));
 
         static Dictionary<string, HashSet<string>> ParseSolution(string path)
+            => GetReferences(GetProjectsInSolution(path));
+
+        static Dictionary<string, HashSet<string>> GetReferences(IEnumerable<string> projects)
+            => projects.ToDictionary(
+                        project => project,
+                        project => new HashSet<string>(ParseProjectReferences(project).Concat(ParsePackageReferences(project))));
+
+        private static IEnumerable<string> ParsePackageReferences(string project)
         {
-            return GetProjectsInSolution(path).
-                ToDictionary(
-                    project => project,
-                    project => new HashSet<string>(ParseProjectReferences(project)));
+            var result = new List<string>();
+            var packageFile = Path.Combine(Path.GetDirectoryName(project), "packages.config");
+            if (File.Exists(packageFile))
+            {
+                var doc = XDocument.Load(packageFile);
+                var elements = doc.Root.Descendants("package");
+                result = elements.Select(p => $"{p.Attribute("id").Value}.nuget").ToList();
+            }
+            return result;
         }
 
         static IEnumerable<string> GetProjectsInSolution(string solutionFile)
-        {
-            return File.ReadAllLines(solutionFile).
+            => File.ReadAllLines(solutionFile).
                 Where(l => l.StartsWith("Project")).
                 Select(l => l.
                     Split('=').Last().
                     Split(',').Skip(1).First().
                     Trim().Trim('"')).
                 Select(p => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(solutionFile), p)).Replace("\\", "/"));
-        }
+
 
         static IEnumerable<string> ParseProjectReferences(string path)
-        {
-            // return XDocument.Load(path).Root.
-            //         Descendants("ProjectReference").
-            //         Select(r => r.
-            //             Attribute("Include").Value);
-            var doc = XDocument.Load(path);
-            var root = doc.Root;
-            var ns = root.GetDefaultNamespace();
-            return root.
-                Descendants(ns + "ProjectReference").
+            => GetProjectReferences(XDocument.Load(path).Root);
+
+        static IEnumerable<string> GetProjectReferences(XElement root)
+            => root.
+                Descendants(root.GetDefaultNamespace() + "ProjectReference").
                 Select(r => r.Attribute("Include").Value);
-        }
 
         static void CreateDotFile(string path, Dictionary<string, HashSet<string>> entries, string containerName)
         {
-            File.WriteAllText(path, "digraph g {\n");
-            File.AppendAllText(path, $"subgraph {containerName} {{\n");
+            var packages = entries.SelectMany(e => e.Value.Where(v => v.EndsWith(".nuget"))).Distinct();
+            File.WriteAllText(path, "digraph {\n");
+            if (packages.Any())
+            {
+                File.AppendAllText(path, "subgraph cluster_0 { label=\"nuget\"\n ");
+                File.AppendAllLines(path, packages.Select(p => p.Remove(p.LastIndexOf('.'))).Select(p => $"\"{p}\" [shape=\"box\"];"));
+                File.AppendAllText(path, "}\n");
+            }
+
+            File.AppendAllText(path, $"subgraph cluster_1 {{\nlabel=\"{containerName}\"");
             File.AppendAllLines(path, entries.Select(e => CreateDot(e.Key, e.Value)));
             File.AppendAllText(path, "}}");
         }

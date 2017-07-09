@@ -1,0 +1,22 @@
+digraph {
+    subgraph cluster_0
+    {
+        label="NuGet";
+        
+        "json.net" [shape="box",color="black", style="filled", fillcolor="white", fontcolor="black"];
+    }
+    subgraph cluster_1 
+    {
+        label="Solution1";
+        labelloc="top";
+        shape="box";
+        color="black";
+
+        "WindowsApp1" [shape="box",color="#00539C", style="filled", fillcolor="#00539C", fontcolor="white"];
+        "WindowsApp1" -> { "Library1", "Library2" };
+        "Library1" [shape="box",color="#388A34", style="filled", fillcolor="#388A34", fontcolor="white"];
+        "Library1" -> { "json.net" };
+        "Library2" [shape="box",color="#672878", style="filled", fillcolor="#672878", fontcolor="white"];
+        "Library2" -> { "json.net" };
+    }
+}
