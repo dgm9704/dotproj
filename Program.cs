@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Text;
     using System.Xml.Linq;
 
     class Program
@@ -31,33 +32,37 @@
         static Dictionary<string, HashSet<string>> GetReferences(IEnumerable<string> projects)
             => projects.ToDictionary(
                         project => project,
-                        project => new HashSet<string>(ParseProjectReferences(project).Concat(ParsePackageReferences(project))));
+                        project => new HashSet<string>(ParseProjectReferences(project).Concat(ParsePackageReferencesForProject(project))));
 
-        private static IEnumerable<string> ParsePackageReferences(string project)
-        {
-            var result = new List<string>();
-            var packageFile = Path.Combine(Path.GetDirectoryName(project), "packages.config");
-            if (File.Exists(packageFile))
-            {
-                var doc = XDocument.Load(packageFile);
-                var elements = doc.Root.Descendants("package");
-                result = elements.Select(p => $"{p.Attribute("id").Value}.nuget").ToList();
-            }
-            return result;
-        }
+        static IEnumerable<string> ParsePackageReferencesForProject(string project)
+            => ParsePackageFile(Path.Combine(Path.GetDirectoryName(project), "packages.config"));
+
+        static IEnumerable<string> ParsePackageFile(string path)
+            => File.Exists(path)
+                ? XDocument.Load(path).Root.Descendants("package").Select(p => $"{p.Attribute("id").Value}.nuget")
+                : new List<string>();
 
         static IEnumerable<string> GetProjectsInSolution(string solutionFile)
             => File.ReadAllLines(solutionFile).
                 Where(l => l.StartsWith("Project")).
-                Select(l => l.
-                    Split('=').Last().
-                    Split(',').Skip(1).First().
-                    Trim().Trim('"')).
+                Select(l => l.Split('=').Last().Split(',').Skip(1).First().Trim().Trim('"')).
+                Where(x => x.EndsWith("proj")).
                 Select(p => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(solutionFile), p)).Replace("\\", "/"));
 
-
         static IEnumerable<string> ParseProjectReferences(string path)
-            => GetProjectReferences(XDocument.Load(path).Root);
+            => GetProjectReferences(TryGetRootElement(path));
+
+        static XElement TryGetRootElement(string path)
+        {
+            try
+            {
+                return XDocument.Load(path).Root;
+            }
+            catch
+            { // vdproj?
+                return new XElement("dummy");
+            }
+        }
 
         static IEnumerable<string> GetProjectReferences(XElement root)
             => root.
@@ -67,46 +72,48 @@
         static void CreateDotFile(string path, Dictionary<string, HashSet<string>> entries, string containerName)
         {
             var packages = entries.SelectMany(e => e.Value.Where(v => v.EndsWith(".nuget"))).Distinct();
-            File.WriteAllText(path, "digraph {\n");
+            var dot = new StringBuilder();
+            dot.AppendLine("digraph {");
+
             if (packages.Any())
             {
-                File.AppendAllText(path, "subgraph cluster_0 { label=\"nuget\"\n ");
-                File.AppendAllLines(path, packages.Select(p => p.Remove(p.LastIndexOf('.'))).Select(p => $"\"{p}\" [shape=\"box\"];"));
-                File.AppendAllText(path, "}\n");
+                dot.AppendLine("subgraph cluster_0 { label=\"nuget\"");
+                dot.AppendLine(packages.Select(p => p.Remove(p.LastIndexOf('.'))).Select(p => $"\"{p}\" [shape=\"box\"];").Join("\n"));
+                dot.AppendLine("}\n");
             }
 
-            File.AppendAllText(path, $"subgraph cluster_1 {{\nlabel=\"{containerName}\"");
-            File.AppendAllLines(path, entries.Select(e => CreateDot(e.Key, e.Value)));
-            File.AppendAllText(path, "}}");
+            dot.AppendLine($"subgraph cluster_1 {{\nlabel=\"{containerName}\";");
+            dot.AppendLine(entries.Select(e => CreateDot(e.Key, e.Value)).Join("\n"));
+            dot.AppendLine("}}");
+            File.WriteAllText(path, dot.ToString());
+            dot.Clear();
         }
+
+        static Dictionary<string, Tuple<string, string>> ProjectColors
+        = new Dictionary<string, Tuple<string, string>>
+        {
+                { "csproj", Tuple.Create("#388A34", "white") },
+                { "vbproj", Tuple.Create("#00539C", "white") },
+                { "fsproj", Tuple.Create("#672878", "white") },
+                { "pyproj", Tuple.Create("#879636", "white") },
+                { "vcxproj",Tuple.Create("#9B4F96", "white") },
+                { "vdproj", Tuple.Create("gray",    "white") },
+                { ""      , Tuple.Create("white",   "black") },
+        };
+
+        static Tuple<string, string> GetProjectColors(string type)
+            => ProjectColors.ContainsKey(type)
+                ? ProjectColors[type]
+                : ProjectColors[""];
 
         static string CreateDot(string key, IEnumerable<string> values)
-        {
-            key = key.Split('/', '\\').Last();
-            var idx = key.LastIndexOf('.');
-            var l = key.Substring(idx + 1);
-            var name = key.Remove(idx).Quote();
-            var bgcolor = "white";
-            var fontcolor = "black";
+            => CreateDot(
+                key.GetProjectName(),  //.LastIndexOf('.')).Split('/', '\\').Last(),
+                GetProjectColors(key.GetProjectType()),
+                values);
 
-            switch (l)
-            {
-                case "csproj":
-                    bgcolor = "#388A34";
-                    fontcolor = "white";
-                    break;
-                case "vbproj":
-                    bgcolor = "#00539C";
-                    fontcolor = "white";
-                    break;
-                case "fsproj":
-                    bgcolor = "#672878";
-                    fontcolor = "white";
-                    break;
-            }
-
-            return $"{name} [shape=\"box\",color=\"{bgcolor}\", style=\"filled\", fillcolor=\"{bgcolor}\", fontcolor=\"{fontcolor}\"];\n{name} -> {{ {values.Select(v => v.GetProjectName().Quote()).Join(", ")} }}";
-        }
+        static string CreateDot(string name, Tuple<string, string> colors, IEnumerable<string> values)
+            => $"\"{name}\" [shape=\"box\",color=\"{colors.Item1}\", style=\"filled\", fillcolor=\"{colors.Item1}\", fontcolor=\"{colors.Item2}\"];\n\"{name}\" -> {{ {values.Select(v => v.GetProjectName().Quote()).Join(", ")} }}";
     }
 
     internal static class StringExtensions
@@ -114,13 +121,13 @@
         public static string GetProjectName(this string Value)
             => Value.Substring(0, Value.LastIndexOf('.')).Split('\\', '/').Last();
 
+        public static string GetProjectType(this string value)
+            => value.Split('.').Last();
+
         public static string Join(this IEnumerable<string> values, string separator)
             => string.Join(separator, values);
 
         public static string Quote(this string value)
             => $"\"{value}\"";
     }
-
-
-
 }

@@ -5,3 +5,5 @@ packages/
 *.user
 .vscode/
 .git-credentials
+*.gv
+*.gv.*
