@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ItemType>PackagingProject</ItemType>
+    <ProjectGuid>{E7414850-5FEB-41B5-94FD-6774F1314F09}</ProjectGuid>
+    <Packages>
+      <Packages>
+        <Package>
+          <Builder>
+            <ChildEntries>
+              <SolutionItemReference>
+                <path>..\csharp\csharp.csproj</path>
+              </SolutionItemReference>
+              <SolutionItemReference>
+                <path>..\fsharp\fsharp.fsproj</path>
+              </SolutionItemReference>
+              <SolutionItemReference>
+                <path>..\il\il.ilproj</path>
+              </SolutionItemReference>
+              <SolutionItemReference>
+                <path>..\vbnet\vbnet.vbproj</path>
+              </SolutionItemReference>
+            </ChildEntries>
+            <RootEntry>
+              <path>..\reference.sln</path>
+              <id>:root:</id>
+            </RootEntry>
+            <targetFile>..\reference.tar.gz</targetFile>
+            <platform>Linux</platform>
+            <configuration>Debug|x86</configuration>
+            <ctype>BinariesZipPackageBuilder</ctype>
+          </Builder>
+          <name>Linux Binaries</name>
+        </Package>
+      </Packages>
+    </Packages>
+  </PropertyGroup>
+</Project>

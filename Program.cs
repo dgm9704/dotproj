@@ -32,7 +32,9 @@
         static Dictionary<string, HashSet<string>> GetReferences(IEnumerable<string> projects)
             => projects.ToDictionary(
                         project => project,
-                        project => new HashSet<string>(ParseProjectReferences(project).Concat(ParsePackageReferencesForProject(project))));
+                        project => new HashSet<string>(ParseProjectReferences(project).
+                        Concat(ParsePackageReferencesForProject(project)).
+                        Concat(ParseSolutionItemReferences(project))));
 
         static IEnumerable<string> ParsePackageReferencesForProject(string project)
             => ParsePackageFile(Path.Combine(Path.GetDirectoryName(project), "packages.config"));
@@ -52,6 +54,9 @@
         static IEnumerable<string> ParseProjectReferences(string path)
             => GetProjectReferences(TryGetRootElement(path));
 
+        static IEnumerable<string> ParseSolutionItemReferences(string path)
+            => GetSolutionItemReferences(TryGetRootElement(path));
+
         static XElement TryGetRootElement(string path)
         {
             try
@@ -68,6 +73,12 @@
             => root.
                 Descendants(root.GetDefaultNamespace() + "ProjectReference").
                 Select(r => r.Attribute("Include").Value);
+
+        static IEnumerable<string> GetSolutionItemReferences(XElement root)
+            => root.
+                Descendants(root.GetDefaultNamespace() + "SolutionItemReference").
+                SelectMany(r => r.Descendants(root.GetDefaultNamespace() + "path")).
+                Select(p => p.Value.Split(@"\").Last());
 
         static void CreateDotFile(string path, Dictionary<string, HashSet<string>> entries, string containerName)
         {
