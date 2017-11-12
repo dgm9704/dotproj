@@ -7,7 +7,4 @@
   <ItemGroup>
     <Compile Remove="reference\**"/>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Graphviz" Version="2.38.0.2"/>
-  </ItemGroup>
 </Project>
