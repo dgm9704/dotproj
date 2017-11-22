@@ -114,6 +114,7 @@
                 ["vcxproj"] = Tuple.Create("#9B4F96", "white"),
                 ["vdproj" ] = Tuple.Create("gray",    "white"),
                 ["mdproj" ] = Tuple.Create("gray",    "white"),
+                ["ilproj" ] = Tuple.Create("black",   "white"),
                 [""       ] = Tuple.Create("white",   "black"),
         };
 
