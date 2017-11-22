@@ -20,7 +20,11 @@
                 ? Path.GetFileNameWithoutExtension(args[0])
                 : Path.GetDirectoryName(args[0]).Split('/', '\\').Last();
 
-            CreateDotFile(args[1], projects, containerName);
+            var output = args.Length > 1
+                ? args[1]
+                : Path.ChangeExtension(args[0], "gv");
+
+            CreateDotFile(output, projects, containerName);
         }
 
         static Dictionary<string, HashSet<string>> ParseFolder(string path)
@@ -103,13 +107,14 @@
         static Dictionary<string, Tuple<string, string>> ProjectColors
         = new Dictionary<string, Tuple<string, string>>
         {
-                { "csproj", Tuple.Create("#388A34", "white") },
-                { "vbproj", Tuple.Create("#00539C", "white") },
-                { "fsproj", Tuple.Create("#672878", "white") },
-                { "pyproj", Tuple.Create("#879636", "white") },
-                { "vcxproj",Tuple.Create("#9B4F96", "white") },
-                { "vdproj", Tuple.Create("gray",    "white") },
-                { ""      , Tuple.Create("white",   "black") },
+                ["csproj" ] = Tuple.Create("#388A34", "white"),
+                ["vbproj" ] = Tuple.Create("#00539C", "white"),
+                ["fsproj" ] = Tuple.Create("#672878", "white"),
+                ["pyproj" ] = Tuple.Create("#879636", "white"),
+                ["vcxproj"] = Tuple.Create("#9B4F96", "white"),
+                ["vdproj" ] = Tuple.Create("gray",    "white"),
+                ["mdproj" ] = Tuple.Create("gray",    "white"),
+                [""       ] = Tuple.Create("white",   "black"),
         };
 
         static Tuple<string, string> GetProjectColors(string type)
