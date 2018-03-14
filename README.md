@@ -28,24 +28,19 @@ there is also a reference solution with different project types used for testing
 at the moment the output from reference solution looks something like this:
 ```
 digraph {
-subgraph cluster_0 { label="nuget"
-"FSharp.Core" [shape="box"];
-"System.ValueTuple" [shape="box"];
-"Newtonsoft.Json" [shape="box"];
-}
-
 subgraph cluster_1 {
 label="reference";
 "fsharp" [shape="box",color="#672878", style="filled", fillcolor="#672878", fontcolor="white"];
-"fsharp" -> { "FSharp.Core", "System.ValueTuple" }
+"fsharp" -> {  }
 "il" [shape="box",color="black", style="filled", fillcolor="black", fontcolor="white"];
 "il" -> {  }
 "vbnet" [shape="box",color="#00539C", style="filled", fillcolor="#00539C", fontcolor="white"];
-"vbnet" -> { "csharp", "il", "Newtonsoft.Json" }
+"vbnet" -> { "csharp" "il" }
 "packaging" [shape="box",color="gray", style="filled", fillcolor="gray", fontcolor="white"];
-"packaging" -> { "csharp", "fsharp", "il", "vbnet" }
+"packaging" -> { "csharp" "fsharp" "il" "vbnet" }
 "csharp" [shape="box",color="#388A34", style="filled", fillcolor="#388A34", fontcolor="white"];
 "csharp" -> {  }
 }}
+
 ```
 

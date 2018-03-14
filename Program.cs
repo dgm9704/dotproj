@@ -130,7 +130,7 @@
                 values);
 
         static string CreateDot(string name, Tuple<string, string> colors, IEnumerable<string> values)
-            => $"\"{name}\" [shape=\"box\",color=\"{colors.Item1}\", style=\"filled\", fillcolor=\"{colors.Item1}\", fontcolor=\"{colors.Item2}\"];\n\"{name}\" -> {{ {values.Select(v => v.GetProjectName().Quote()).Join(", ")} }}";
+            => $"\"{name}\" [shape=\"box\",color=\"{colors.Item1}\", style=\"filled\", fillcolor=\"{colors.Item1}\", fontcolor=\"{colors.Item2}\"];\n\"{name}\" -> {{ {values.Select(v => v.GetProjectName().Quote()).Join(" ")} }}";
     }
 
     internal static class StringExtensions
