@@ -10,6 +10,8 @@ Code is written in [C#](https://docs.microsoft.com/en-us/dotnet/csharp/index) 7.
 [.NET Standard 2.0](https://github.com/dotnet/standard/blob/master/docs/versions/netstandard2.0.md) / 
 [.NET Core 2.0](https://docs.microsoft.com/en-us/dotnet/core/)
 
+I use [WebGraphviz](http://webgraphviz.com/) a lot for testing the output
+
 ## License:
 GNU Lesser General Public License v3.0
 
@@ -23,7 +25,7 @@ there is also a reference solution with different project types used for testing
 ### License
 [Free Public License 1.0.0](https://opensource.org/licenses/FPL-1.0.0)
 
-at them moment the output from reference solution looks something like this:
+at the moment the output from reference solution looks something like this:
 ```
 digraph {
 subgraph cluster_0 { label="nuget"
