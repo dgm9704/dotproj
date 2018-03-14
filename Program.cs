@@ -37,7 +37,7 @@
             => projects.ToDictionary(
                         project => project,
                         project => new HashSet<string>(ParseProjectReferences(project).
-                        Concat(ParsePackageReferencesForProject(project)).
+                        //Concat(ParsePackageReferencesForProject(project)).
                         Concat(ParseSolutionItemReferences(project))));
 
         static IEnumerable<string> ParsePackageReferencesForProject(string project)
