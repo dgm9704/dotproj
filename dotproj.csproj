@@ -7,4 +7,7 @@
   <ItemGroup>
     <Compile Remove="reference\**"/>
   </ItemGroup>
+  <PropertyGroup>
+  <DefaultItemExcludes>$(DefaultItemExcludes);**\*.gv</DefaultItemExcludes>
+</PropertyGroup>
 </Project>
