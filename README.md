@@ -26,6 +26,7 @@ there is also a reference solution with different project types used for testing
 [Free Public License 1.0.0](https://opensource.org/licenses/FPL-1.0.0)
 
 at the moment the output from reference solution looks something like this:
+
 ```
 digraph {
 subgraph cluster_1 {
