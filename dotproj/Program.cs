@@ -1,15 +1,17 @@
 ﻿namespace dotproj
 {
+    using System.IO;
+    using System.Linq;
     using Diwen.DotProj;
 
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             var isSolution = Path.HasExtension(args[0]);
             var projects = isSolution
-                ? ParseSolution(args[0])
-                : ParseFolder(args[0]);
+                ? Parse.ParseSolution(args[0])
+                : Parse.ParseFolder(args[0]);
 
             var containerName = isSolution
                 ? Path.GetFileNameWithoutExtension(args[0])
@@ -19,7 +21,7 @@
                 ? args[1]
                 : Path.ChangeExtension(args[0], "gv");
 
-            CreateDotFile(output, projects, containerName);
+            Create.CreateDotFile(output, projects, containerName);
         }
     }
 }

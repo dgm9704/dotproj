@@ -1,6 +1,9 @@
 namespace Diwen.DotProj.Extensions
 {
-    internal static class StringExtensions
+    using System.Collections.Generic;
+    using System.Linq;
+
+    static class StringExtensions
     {
         public static string GetProjectName(this string Value)
             => Value.Substring(0, Value.LastIndexOf('.')).Split('\\', '/').Last();

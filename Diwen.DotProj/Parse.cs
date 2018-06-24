@@ -1,18 +1,16 @@
 namespace Diwen.DotProj
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using System.Xml.Linq;
-    
-    class Parsing
+
+    public class Parse
     {
-        static Dictionary<string, HashSet<string>> ParseFolder(string path)
+        public static Dictionary<string, HashSet<string>> ParseFolder(string path)
             => GetReferences(Directory.EnumerateFiles(path, "*.*proj", SearchOption.AllDirectories));
 
-        static Dictionary<string, HashSet<string>> ParseSolution(string path)
+        public static Dictionary<string, HashSet<string>> ParseSolution(string path)
             => GetReferences(GetProjectsInSolution(path));
 
         static Dictionary<string, HashSet<string>> GetReferences(IEnumerable<string> projects)
@@ -48,7 +46,6 @@ namespace Diwen.DotProj
             try
             {
                 return XDocument.Load(path).Root;
-                return XDocument.Load(path).Root;
             }
             catch
             { // vdproj?
@@ -65,7 +62,6 @@ namespace Diwen.DotProj
             => root.
                 Descendants(root.GetDefaultNamespace() + "SolutionItemReference").
                 SelectMany(r => r.Descendants(root.GetDefaultNamespace() + "path")).
-                Select(p => p.Value.Split(@"\").Last());
-
+                Select(p => p.Value.Split('\\').Last());
     }
 }

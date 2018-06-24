@@ -1,8 +1,16 @@
 namespace Diwen.DotProj
 {
-    class Create
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Xml.Linq;
+    using Diwen.DotProj.Extensions;
+
+    public class Create
     {
-        static void CreateDotFile(string path, Dictionary<string, HashSet<string>> entries, string containerName)
+        public static void CreateDotFile(string path, Dictionary<string, HashSet<string>> entries, string containerName)
         {
             var packages = entries.SelectMany(e => e.Value.Where(v => v.EndsWith(".nuget"))).Distinct();
             var dot = new StringBuilder();
